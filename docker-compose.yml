@@ -1,0 +1,56 @@
+version: "3"
+
+services:
+  back:
+    build:
+      context: server
+    container_name: back
+    networks:
+      - node-network
+    tty: true
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  front:
+    build:
+      context: client
+    container_name: front
+    networks:
+      - node-network
+    tty: true
+    ports:
+      - "3000:3000"
+
+  db:
+    image: postgres:latest
+    container_name: db
+    restart: always
+    tty: true
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=1234
+    ports:
+      - "5432:5432"
+    networks:
+      - node-network
+
+  nginx:
+    build:
+      context: nginx
+    container_name: nginx
+    restart: always
+    tty: true
+    ports:
+      - "80:80"
+    networks:
+      - node-network
+    depends_on:
+      - back
+      - front
+
+networks:
+  node-network:
+    driver: bridge
